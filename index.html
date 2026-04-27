@@ -220,15 +220,6 @@ const DS_CHANNELS = {
   ]
 };
 
-/* Section heading */
-const SH = ({ children }) => (
-  <h2 style={{fontSize:'1rem',fontWeight:700,color:'#e8e6f0',marginBottom:'.75rem',
-    display:'flex',alignItems:'center',gap:'.5rem'}}>
-    <span style={{width:3,height:16,background:'#13d6c1',borderRadius:2,display:'inline-block',flexShrink:0}}/>
-    {children}
-  </h2>
-);
-
 /* Writing vs execution order diagram */
 const ExecOrder = () => {
   const write = ['SELECT','FROM','WHERE','GROUP BY','HAVING','ORDER BY','LIMIT'];
@@ -622,21 +613,21 @@ WHERE spend > (
       </Analogy>
       <Code>{`-- PostgreSQL
 WITH RECURSIVE month_series AS (
-  SELECT DATE '2026-01-01' AS month_start         -- anchor query
+  SELECT DATE '2025-06-01' AS month_start         -- anchor query
   UNION ALL
   SELECT month_start + INTERVAL '1 month'         -- recursive step
   FROM month_series
-  WHERE month_start < DATE '2026-06-01'           -- stop condition
+  WHERE month_start < DATE '2025-12-01'           -- stop condition
 )
 SELECT month_start FROM month_series;
 
 -- BigQuery
 WITH RECURSIVE month_series AS (
-  SELECT DATE '2026-01-01' AS month_start
+  SELECT DATE '2025-06-01' AS month_start
   UNION ALL
   SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
   FROM month_series
-  WHERE month_start < DATE '2026-06-01'
+  WHERE month_start < DATE '2025-12-01'
 )`}</Code>
       <Tip>The anchor query (first SELECT) must not reference the CTE name. MySQL 8+, PostgreSQL, BigQuery and SQL Server all support recursive CTEs.</Tip>
     </div>
