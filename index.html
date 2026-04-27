@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Analytics Lab — Valesca Bravo 2026</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = { theme: { extend: { colors: {
+      navy: { DEFAULT:'#1d085e', light:'#2d1278', dark:'#130440' },
+      teal: { DEFAULT:'#13d6c1', dark:'#0a9a88', light:'#3de8d6' }
+    }}}}
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sora',sans-serif;background:#09071a;color:#e8e6f0;line-height:1.6;min-height:100vh}
+
+    /* SYNTAX */
+    .code-block{background:#141428;border-radius:10px;padding:.9rem 1.1rem;font-family:'DM Mono',monospace;font-size:.78rem;line-height:1.85;overflow-x:auto;border:1px solid #1e1e38;white-space:pre}
+    .sql-kw{color:#4ec9b0;font-weight:600}
+    .sql-str{color:#ce9178}
+    .sql-cmt{color:#6a9955;font-style:italic}
+    .sql-num{color:#b5cea8}
+    .sql-fn{color:#dcdcaa}
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:#110e2e}
+    ::-webkit-scrollbar-thumb{background:#13d6c1;border-radius:3px}
+    .tab-scroll{overflow-x:auto;scrollbar-width:thin}
+    .tab-scroll::-webkit-scrollbar{height:3px}
+
+    /* ANIMATION */
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .fade-up{animation:fadeUp .28s ease forwards}
+    @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+
+    /* TABLE */
+    .dt{width:100%;border-collapse:collapse;font-size:.77rem}
+    .dt th{background:#1d085e;color:#13d6c1;padding:.42rem .7rem;text-align:left;font-weight:600;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase}
+    .dt td{padding:.38rem .7rem;border-bottom:1px solid #1a1542;font-family:'DM Mono',monospace}
+    .dt tr:hover td{background:#140f38}
+
+    /* CARDS */
+    .card{background:#110e2e;border:1px solid #1e1b46;border-radius:12px;padding:1.1rem 1.15rem;transition:border-color .2s}
+    .card:hover{border-color:rgba(19,214,193,.25)}
+    .analogy-box{background:linear-gradient(135deg,rgba(29,8,94,.55),rgba(10,154,136,.12));border-left:3px solid #13d6c1;border-radius:0 8px 8px 0;padding:.7rem .95rem;font-size:.84rem;line-height:1.65;margin-bottom:.85rem}
+    .error-box{background:rgba(239,68,68,.07);border-left:3px solid #ef4444;border-radius:0 8px 8px 0;padding:.6rem .9rem;font-size:.82rem;color:#fca5a5;line-height:1.6}
+    .tip-box{background:rgba(16,185,129,.07);border-left:3px solid #10b981;border-radius:0 8px 8px 0;padding:.6rem .9rem;font-size:.82rem;color:#6ee7b7;line-height:1.6}
+    .result-badge{display:inline-flex;align-items:center;gap:.35rem;background:rgba(10,154,136,.15);border:1px solid rgba(19,214,193,.3);border-radius:6px;padding:.22rem .6rem;font-family:'DM Mono',monospace;font-size:.77rem;color:#13d6c1}
+
+    /* QUIZ */
+    .qopt{background:#140f38;border:1px solid #1e1b46;border-radius:8px;padding:.58rem .85rem;cursor:pointer;transition:all .17s;font-size:.83rem;text-align:left;width:100%;color:#e8e6f0;font-family:'Sora',sans-serif}
+    .qopt:hover:not(:disabled){border-color:#13d6c1;background:#1e1b46}
+    .qopt.correct{border-color:#10b981;background:rgba(16,185,129,.12);color:#10b981}
+    .qopt.wrong{border-color:#ef4444;background:rgba(239,68,68,.1);color:#ef4444}
+
+    /* BUTTONS */
+    .btn-ghost{background:transparent;border:1px solid #1e1b46;border-radius:6px;padding:.46rem .88rem;color:#8b86a8;cursor:pointer;font-size:.79rem;font-family:'Sora',sans-serif;transition:all .17s}
+    .btn-ghost:hover:not(:disabled){border-color:#13d6c1;color:#e8e6f0}
+    .btn-ghost:disabled{opacity:.35;cursor:not-allowed}
+    .btn-primary{background:#13d6c1;color:#09071a;border:none;border-radius:6px;padding:.46rem .88rem;font-weight:700;font-size:.79rem;font-family:'Sora',sans-serif;cursor:pointer;transition:opacity .15s}
+    .btn-primary:hover{opacity:.88}
+    .btn-primary:disabled{background:#1e1b46;color:#3a3660;cursor:not-allowed;opacity:1}
+
+    /* STEP PILL */
+    .step-pill{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:#1d085e;border:1px solid rgba(19,214,193,.4);border-radius:50%;font-size:.71rem;font-weight:700;color:#13d6c1;flex-shrink:0;font-family:'DM Mono',monospace}
+
+    /* CHEAT SHEET */
+    .cs-card{background:#110e2e;border:1px solid #1e1b46;border-radius:8px;padding:.82rem;transition:border-color .2s,transform .18s}
+    .cs-card:hover{border-color:rgba(19,214,193,.38);transform:translateY(-2px)}
+
+    /* HERO GRID BG */
+    .hero-grid{background-image:linear-gradient(rgba(19,214,193,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(19,214,193,.04) 1px,transparent 1px);background-size:32px 32px}
+
+    /* NAV TAB */
+    .nav-tab{background:transparent;border:none;padding:.46rem .82rem;font-family:'Sora',sans-serif;font-size:.78rem;font-weight:600;color:#504d70;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .18s}
+    .nav-tab.active{color:#13d6c1;border-bottom-color:#13d6c1}
+    .nav-tab:hover:not(.active){color:#8b86a8}
+
+    /* DIALECT BADGE */
+    .dialect{display:inline-flex;align-items:center;gap:.25rem;background:#1a1542;border:1px solid #2a2560;border-radius:4px;padding:.12rem .42rem;font-family:'DM Mono',monospace;font-size:.66rem;color:#8b86a8}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState } = React;
+
+/* ── BASE COMPONENTS ── */
+
+const Badge = ({ children, variant = 'teal' }) => {
+  const styles = {
+    teal:   {background:'rgba(19,214,193,.12)',border:'1px solid rgba(19,214,193,.3)',color:'#13d6c1'},
+    navy:   {background:'rgba(29,8,94,.5)',border:'1px solid rgba(45,18,120,.6)',color:'#8b86a8'},
+    orange: {background:'rgba(206,145,120,.1)',border:'1px solid rgba(206,145,120,.3)',color:'#ce9178'},
+    green:  {background:'rgba(16,185,129,.1)',border:'1px solid rgba(16,185,129,.3)',color:'#10b981'},
+  };
+  return (
+    <span style={{display:'inline-flex',alignItems:'center',borderRadius:5,padding:'.15rem .52rem',
+      fontFamily:'DM Mono,monospace',fontSize:'.69rem',fontWeight:600,...styles[variant]}}>
+      {children}
+    </span>
+  );
+};
+
+const Analogy = ({ icon = '💡', children }) => (
+  <div className="analogy-box"><span style={{marginRight:'.45rem'}}>{icon}</span>{children}</div>
+);
+
+const Err = ({ children }) => (
+  <div className="error-box" style={{marginTop:'.65rem'}}>
+    <strong style={{color:'#f87171'}}>⚠ Common mistake: </strong>{children}
+  </div>
+);
+
+const Tip = ({ children }) => (
+  <div className="tip-box" style={{marginTop:'.65rem'}}>
+    <strong style={{color:'#34d399'}}>✓ Pro tip: </strong>{children}
+  </div>
+);
+
+/* Syntax-highlighted SQL — no external lib */
+const Code = ({ children }) => {
+  const KWS = ['SELECT','FROM','WHERE','GROUP BY','ORDER BY','HAVING','LIMIT','OFFSET',
+    'INNER JOIN','LEFT JOIN','RIGHT JOIN','FULL OUTER JOIN','CROSS JOIN','SELF JOIN','JOIN',
+    'ON','AS','AND','OR','NOT','IN','IS NULL','IS NOT NULL','IS','NULL','LIKE','BETWEEN',
+    'CASE','WHEN','THEN','ELSE','END','WITH','UNION ALL','UNION','DISTINCT','EXISTS',
+    'RECURSIVE','OVER','PARTITION BY','ROWS BETWEEN','RANGE BETWEEN','UNBOUNDED PRECEDING',
+    'UNBOUNDED FOLLOWING','CURRENT ROW','PRECEDING','FOLLOWING','BY','ALL','ASC','DESC',
+    'INTO','VALUES','SET','CREATE TABLE','CREATE INDEX','DROP','ALTER','EXPLAIN ANALYZE',
+    'EXPLAIN','ROLLUP','CUBE','GROUPING SETS','FILTER','INSERT','UPDATE','DELETE'];
+  const FNS = ['COUNT','SUM','AVG','MIN','MAX','COALESCE','NULLIF','CAST','ROW_NUMBER',
+    'RANK','DENSE_RANK','LAG','LEAD','FIRST_VALUE','LAST_VALUE','NTILE','ROUND','FLOOR',
+    'CEIL','DATE_TRUNC','EXTRACT','TO_DATE','CONCAT','LOWER','UPPER','TRIM','REPLACE',
+    'SUBSTRING','LENGTH','GROUPING','DATEDIFF','DATEADD','STRFTIME','FORMAT'];
+
+  const tokenize = (line) => {
+    const parts = []; let rest = line; let ki = 0;
+    while (rest.length) {
+      if (rest.startsWith('--')) { parts.push(<span key={ki++} className="sql-cmt">{rest}</span>); break; }
+      const sq = rest.match(/^('[^']*')/);
+      if (sq) { parts.push(<span key={ki++} className="sql-str">{sq[1]}</span>); rest=rest.slice(sq[1].length); continue; }
+      const nm = rest.match(/^(\b\d+\.?\d*\b)/);
+      if (nm) { parts.push(<span key={ki++} className="sql-num">{nm[1]}</span>); rest=rest.slice(nm[1].length); continue; }
+      const sorted = [...KWS,...FNS].sort((a,b)=>b.length-a.length);
+      let hit = false;
+      for (const kw of sorted) {
+        const re = new RegExp(`^(${kw.replace(/\s+/g,'\\s+')})(?=[^A-Za-z_]|$)`,'i');
+        const m = rest.match(re);
+        if (m) {
+          const cls = FNS.includes(kw.toUpperCase()) ? 'sql-fn' : 'sql-kw';
+          parts.push(<span key={ki++} className={cls}>{m[1]}</span>);
+          rest=rest.slice(m[1].length); hit=true; break;
+        }
+      }
+      if (!hit) { parts.push(rest[0]); rest=rest.slice(1); }
+    }
+    return parts;
+  };
+
+  return (
+    <div className="code-block">
+      {children.trim().split('\n').map((line, i) => (
+        <span key={i}>{tokenize(line)}{'\n'}</span>
+      ))}
+    </div>
+  );
+};
+
+/* Data table */
+const DT = ({ headers, rows }) => (
+  <div style={{overflowX:'auto',marginTop:'.6rem'}}>
+    <table className="dt">
+      <thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead>
+      <tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c ?? <span style={{color:'#504d70'}}>NULL</span>}</td>)}</tr>)}</tbody>
+    </table>
+  </div>
+);
+
+/* Section heading */
+const SH = ({ children }) => (
+  <h2 style={{fontSize:'1rem',fontWeight:700,color:'#e8e6f0',marginBottom:'.75rem',
+    display:'flex',alignItems:'center',gap:'.5rem'}}>
+    <span style={{width:3,height:16,background:'#13d6c1',borderRadius:2,display:'inline-block',flexShrink:0}}/>
+    {children}
+  </h2>
+);
+
+/* ── TAB CONTENT PLACEHOLDERS ── */
+/* ── PHASE 2 ── */
+
+/* Shared datasets */
+const DS_CAMPAIGNS = {
+  headers:['id','campaign','channel','spend','clicks','conversions','month'],
+  rows:[
+    [1,'Summer Sale','email',1200,4500,320,'2025-06'],
+    [2,'Brand Awareness','social',3400,18200,890,'2025-06'],
+    [3,'Retargeting','paid_search',2100,3200,510,'2025-07'],
+    [4,'Welcome Flow','email',400,1800,240,'2025-07'],
+    [5,'Black Friday','social',8500,42000,3200,'2025-11'],
+    [6,'Black Friday','email',2200,9800,1450,'2025-11'],
+    [7,'Year End','paid_search',1800,2900,380,'2025-12'],
+    [8,'New Year Push','social',1100,7600,290,'2025-12'],
+  ]
+};
+
+const DS_CHANNELS = {
+  headers:['channel_id','name','platform','cpc_bench'],
+  rows:[
+    ['CH01','email','Klaviyo',0.08],
+    ['CH02','social','Meta Ads',0.18],
+    ['CH03','paid_search','Google Ads',0.45],
+    ['CH04','display','Google Display',0.12],
+    ['CH05','affiliate','CJ Affiliate',0.22],
+  ]
+};
+
+/* Section heading */
+const SH = ({ children }) => (
+  <h2 style={{fontSize:'1rem',fontWeight:700,color:'#e8e6f0',marginBottom:'.75rem',
+    display:'flex',alignItems:'center',gap:'.5rem'}}>
+    <span style={{width:3,height:16,background:'#13d6c1',borderRadius:2,display:'inline-block',flexShrink:0}}/>
+    {children}
+  </h2>
+);
+
+/* Writing vs execution order diagram */
+const ExecOrder = () => {
+  const write = ['SELECT','FROM','WHERE','GROUP BY','HAVING','ORDER BY','LIMIT'];
+  const exec  = ['FROM','WHERE','GROUP BY','HAVING','SELECT','ORDER BY','LIMIT'];
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'.85rem',marginBottom:'.9rem'}}>
+      {[['Writing Order',write,'#ce9178'],['Execution Order',exec,'#13d6c1']].map(([title,items,col])=>(
+        <div key={title} className="card" style={{padding:'.85rem'}}>
+          <p style={{fontSize:'.67rem',fontWeight:700,color:col,marginBottom:'.55rem',
+            letterSpacing:'.06em',textTransform:'uppercase'}}>{title}</p>
+          {items.map((kw,i)=>(
+            <div key={kw} style={{display:'flex',alignItems:'center',gap:'.45rem',marginBottom:'.28rem'}}>
+              <span className="step-pill">{i+1}</span>
+              <span style={{fontFamily:'DM Mono,monospace',fontSize:'.76rem',
+                color:(kw==='SELECT'&&title==='Execution Order')?'#504d70':col}}>{kw}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* Interactive Venn diagram */
+const VennDiagram = ({ joinId }) => {
+  const cx1=105, cx2=195, cy=82, r=66;
+  const cfg = {
+    inner:{ L:false, I:true,  R:false },
+    left: { L:true,  I:true,  R:false },
+    right:{ L:false, I:true,  R:true  },
+    full: { L:true,  I:true,  R:true  },
+    cross:{ L:true,  I:true,  R:true  },
+    self: { L:true,  I:false, R:true  },
+  };
+  const c = cfg[joinId] || cfg.inner;
+  const HL='#13d6c1', DIM='#221b56';
+  return (
+    <svg viewBox="0 0 300 168" style={{width:'100%',maxWidth:260,display:'block',margin:'0 auto'}}>
+      <defs>
+        <clipPath id={`clipL-${joinId}`}><circle cx={cx1} cy={cy} r={r}/></clipPath>
+      </defs>
+      <circle cx={cx1} cy={cy} r={r} fill={c.L?HL:DIM}
+        opacity={c.L?.5:.22} stroke={c.L?HL:'#3a3660'} strokeWidth="1.5" strokeOpacity=".7"/>
+      <circle cx={cx2} cy={cy} r={r} fill={c.R?HL:DIM}
+        opacity={c.R?.5:.22} stroke={c.R?HL:'#3a3660'} strokeWidth="1.5" strokeOpacity=".7"/>
+      <circle cx={cx2} cy={cy} r={r} clipPath={`url(#clipL-${joinId})`}
+        fill={c.I?HL:DIM} opacity={c.I?.82:.08} style={{pointerEvents:'none'}}/>
+      <text x={cx1-20} y={cy+r+20} fill="#6b6890" fontSize="10.5" fontFamily="DM Mono,monospace">Table A</text>
+      <text x={cx2-8}  y={cy+r+20} fill="#6b6890" fontSize="10.5" fontFamily="DM Mono,monospace">Table B</text>
+    </svg>
+  );
+};
+
+const JOIN_TYPES = [
+  { id:'inner', label:'INNER',
+    desc:'Only rows that have a match in BOTH tables are returned.',
+    code:`SELECT c.campaign, ch.platform\nFROM campaigns c\nINNER JOIN channels ch\n  ON c.channel = ch.name\nORDER BY c.campaign;`,
+    note:'Channels with no campaigns (affiliate) disappear entirely from the result.' },
+  { id:'left', label:'LEFT',
+    desc:'All rows from the left table are kept; NULLs fill columns where the right table has no match.',
+    code:`SELECT ch.name, COUNT(c.id) AS total_campaigns\nFROM channels ch\nLEFT JOIN campaigns c ON ch.name = c.channel\nGROUP BY ch.name\nORDER BY total_campaigns DESC;`,
+    note:'affiliate appears with total_campaigns = 0. This is the most common JOIN in analytics.' },
+  { id:'right', label:'RIGHT',
+    desc:'All rows from the right table are kept; NULLs fill the left columns where there is no match.',
+    code:`SELECT c.campaign, ch.platform\nFROM campaigns c\nRIGHT JOIN channels ch\n  ON c.channel = ch.name;`,
+    note:'Functionally identical to swapping table positions and using LEFT JOIN — which is clearer.' },
+  { id:'full', label:'FULL OUTER',
+    desc:'Every row from both tables is returned. NULLs appear on whichever side has no match.',
+    code:`SELECT c.campaign, ch.name\nFROM campaigns c\nFULL OUTER JOIN channels ch\n  ON c.channel = ch.name;`,
+    note:'MySQL does not support FULL OUTER JOIN. Emulate with LEFT JOIN UNION ALL RIGHT JOIN ... WHERE left.id IS NULL.' },
+  { id:'cross', label:'CROSS',
+    desc:'Every row from Table A is combined with every row from Table B. Result = N × M rows.',
+    code:`-- Generate a channel × month grid for reporting\nSELECT ch.name, m.month\nFROM channels ch\nCROSS JOIN (\n  SELECT DISTINCT month FROM campaigns\n) m\nORDER BY ch.name, m.month;`,
+    note:'5 channels × 4 distinct months = 20 rows. Never run on two large tables without a WHERE.' },
+  { id:'self', label:'SELF',
+    desc:'A table joined to itself. Useful for hierarchies, comparisons within the same entity.',
+    code:`-- Campaigns sharing the same channel\nSELECT a.campaign, b.campaign AS peer, a.channel\nFROM campaigns a\nJOIN campaigns b\n  ON a.channel = b.channel\n  AND a.id <> b.id\nORDER BY a.channel, a.campaign;`,
+    note:'Always alias both copies (a, b). Without aliases, column references are ambiguous.' },
+];
+
+function TabFundamentals() {
+  return (
+    <div className="fade-up">
+      <SH>Writing order ≠ Execution order</SH>
+      <Analogy icon="🍳">
+        Think of a recipe: you write "preheat oven" first, but you actually prep the ingredients before the oven is hot. SQL reads your query top to bottom, but <em>runs</em> it in a completely different sequence — FROM before SELECT, WHERE before GROUP BY.
+      </Analogy>
+      <ExecOrder/>
+      <Tip>This is why you cannot reference a SELECT alias inside a WHERE clause. WHERE runs before SELECT has even read the column list.</Tip>
+
+      <div style={{height:'1.4rem'}}/>
+      <SH>Full anatomy — one query, all clauses</SH>
+      <Code>{`-- Dataset: campaigns table (8 rows)
+SELECT
+  channel,
+  COUNT(*)                                        AS total_campaigns,
+  SUM(spend)                                      AS total_spend,
+  ROUND(SUM(conversions)::numeric / SUM(clicks), 3) AS cvr
+FROM campaigns
+WHERE spend > 500             -- filter rows BEFORE grouping
+GROUP BY channel
+HAVING SUM(conversions) > 400 -- filter groups AFTER grouping
+ORDER BY total_spend DESC
+LIMIT 3;`}</Code>
+      <DT {...DS_CAMPAIGNS}/>
+      <Err>Writing <code style={{color:'#ce9178',fontFamily:'DM Mono'}}>WHERE SUM(spend) &gt; 1000</code> to filter aggregated values. WHERE sees individual rows, not group totals — use HAVING for that.</Err>
+
+      <div style={{height:'1.4rem'}}/>
+      <SH>Dialect: top-N rows</SH>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(175px,1fr))',gap:'.6rem',marginTop:'.4rem'}}>
+        {[
+          ['PostgreSQL / MySQL / BigQuery','LIMIT 10','#4ec9b0'],
+          ['SQL Server 2012+','FETCH NEXT 10 ROWS ONLY','#ce9178'],
+          ['SQL Server (older)','SELECT TOP 10 ...','#ce9178'],
+          ['Oracle 12c+','FETCH FIRST 10 ROWS ONLY','#b5cea8'],
+        ].map(([db,syn,col])=>(
+          <div key={db} className="card" style={{padding:'.65rem .8rem'}}>
+            <p style={{fontSize:'.65rem',color:'#6b6890',marginBottom:'.28rem'}}>{db}</p>
+            <code style={{fontFamily:'DM Mono,monospace',fontSize:'.72rem',color:col}}>{syn}</code>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TabJoins() {
+  const [active, setActive] = useState('inner');
+  const jt = JOIN_TYPES.find(j=>j.id===active);
+  return (
+    <div className="fade-up">
+      <Analogy icon="🤝">
+        Imagine two guest lists for the same event. INNER JOIN = only people on both lists get in. LEFT JOIN = everyone on the first list enters, with a blank name-tag where there is no match on the second list.
+      </Analogy>
+      <div style={{display:'flex',flexWrap:'wrap',gap:'.42rem',marginBottom:'1.1rem'}}>
+        {JOIN_TYPES.map(j=>(
+          <button key={j.id} onClick={()=>setActive(j.id)}
+            style={{background:active===j.id?'rgba(19,214,193,.15)':'transparent',
+              border:`1px solid ${active===j.id?'#13d6c1':'#1e1b46'}`,borderRadius:6,
+              padding:'.3rem .72rem',fontFamily:'Sora,sans-serif',fontSize:'.75rem',fontWeight:600,
+              color:active===j.id?'#13d6c1':'#504d70',cursor:'pointer',transition:'all .16s'}}>
+            {j.label}
+          </button>
+        ))}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'auto 1fr',gap:'1.2rem',alignItems:'start',
+        gridTemplateColumns:'minmax(180px,240px) 1fr'}}>
+        <div><VennDiagram joinId={active}/></div>
+        <div>
+          <p style={{fontSize:'.86rem',color:'#c8c4e8',marginBottom:'.7rem',lineHeight:1.65}}>{jt.desc}</p>
+          <Code>{jt.code}</Code>
+          <Tip>{jt.note}</Tip>
+        </div>
+      </div>
+      <div style={{height:'1.1rem'}}/>
+      <SH>Example datasets</SH>
+      <p style={{fontSize:'.75rem',color:'#6b6890',marginBottom:'.35rem',fontFamily:'DM Mono,monospace'}}>campaigns</p>
+      <DT {...DS_CAMPAIGNS}/>
+      <p style={{fontSize:'.75rem',color:'#6b6890',margin:'.85rem 0 .35rem',fontFamily:'DM Mono,monospace'}}>channels</p>
+      <DT {...DS_CHANNELS}/>
+      <Err>Joining on columns with different data types (e.g. integer id vs text id). The query runs but returns zero rows — no error, no warning.</Err>
+    </div>
+  );
+}
+
+function TabAggregation() {
+  return (
+    <div className="fade-up">
+      <SH>HAVING vs WHERE</SH>
+      <Analogy icon="🚪">
+        WHERE is the bouncer at the entrance — it checks each person before they join a table. HAVING is the manager inside — reviewing groups after people have already sat down together.
+      </Analogy>
+      <Code>{`SELECT
+  channel,
+  COUNT(*)                  AS total_rows,        -- every row
+  COUNT(campaign)           AS non_null_campaigns, -- skips NULLs
+  COUNT(DISTINCT campaign)  AS unique_campaigns    -- unique values only
+FROM campaigns
+WHERE spend > 500             -- filters individual rows (before grouping)
+GROUP BY channel
+HAVING SUM(conversions) > 400 -- filters groups (after grouping)
+ORDER BY unique_campaigns DESC;`}</Code>
+      <Err>Using COUNT(*) when you mean COUNT(DISTINCT col). On a clean table they match. On raw event logs — where one campaign generates hundreds of rows — they diverge dramatically.</Err>
+
+      <div style={{height:'1.4rem'}}/>
+      <SH>ROLLUP — subtotals without extra queries</SH>
+      <Analogy icon="📊">
+        Instead of three separate GROUP BY queries (by channel, by month, grand total), ROLLUP returns all levels at once. It is the SQL equivalent of enabling subtotals in a pivot table.
+      </Analogy>
+      <Code>{`SELECT
+  channel,
+  month,
+  SUM(spend) AS total_spend
+FROM campaigns
+GROUP BY ROLLUP(channel, month)
+ORDER BY channel NULLS LAST, month NULLS LAST;
+-- month IS NULL  →  subtotal for that channel
+-- channel IS NULL →  grand total`}</Code>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:'.55rem',margin:'.65rem 0'}}>
+        {[['PostgreSQL','ROLLUP(a, b)'],['BigQuery','ROLLUP(a, b)'],
+          ['MySQL 8+','a, b WITH ROLLUP'],['SQL Server','ROLLUP(a, b)']].map(([db,s])=>(
+          <div key={db} className="card" style={{padding:'.55rem .75rem'}}>
+            <p style={{fontSize:'.64rem',color:'#6b6890',marginBottom:'.22rem'}}>{db}</p>
+            <code style={{fontFamily:'DM Mono,monospace',fontSize:'.7rem',color:'#4ec9b0'}}>{s}</code>
+          </div>
+        ))}
+      </div>
+
+      <div style={{height:'1.4rem'}}/>
+      <SH>FILTER — conditional aggregation</SH>
+      <Analogy icon="🎯">
+        FILTER lets you count or sum only the rows matching a condition — without a separate subquery. Like having SUMIF and SUM in the same cell, but in SQL.
+      </Analogy>
+      <Code>{`-- PostgreSQL / BigQuery
+SELECT
+  channel,
+  SUM(spend)                                   AS total_spend,
+  SUM(spend) FILTER (WHERE month = '2025-11')  AS nov_spend,
+  COUNT(*) FILTER (WHERE conversions > 500)    AS high_conv_campaigns
+FROM campaigns
+GROUP BY channel;
+
+-- SQL Server / MySQL (CASE WHEN equivalent)
+SELECT
+  channel,
+  SUM(spend)                                            AS total_spend,
+  SUM(CASE WHEN month = '2025-11' THEN spend END)       AS nov_spend,
+  COUNT(CASE WHEN conversions > 500 THEN 1 END)         AS high_conv_campaigns
+FROM campaigns
+GROUP BY channel;`}</Code>
+      <Tip>FILTER is cleaner and often faster than CASE WHEN on wide aggregations. MySQL and SQL Server do not support it — use CASE WHEN there.</Tip>
+    </div>
+  );
+}
+/* ── PHASE 3 ── */
+
+function TabWindow() {
+  const rankData = {
+    headers:['campaign','spend','ROW_NUMBER','RANK','DENSE_RANK'],
+    rows:[
+      ['Black Friday (social)',8500,1,1,1],
+      ['Brand Awareness',3400,2,2,2],
+      ['Retargeting',3400,3,2,2],
+      ['Black Friday (email)',2200,4,4,3],
+      ['Year End',1800,5,5,4],
+    ]
+  };
+  return (
+    <div className="fade-up">
+      <SH>Window vs GROUP BY — the key difference</SH>
+      <Analogy icon="🪟">
+        GROUP BY collapses rows into one per group — individual records disappear. A window function peeks at surrounding rows without collapsing anything. The detail stays; the calculation is added as a new column.
+      </Analogy>
+      <Code>{`-- GROUP BY: 8 rows collapse to 3 channels
+SELECT channel, SUM(spend) FROM campaigns GROUP BY channel;
+
+-- OVER: 8 rows stay as 8, each gains a running total
+SELECT campaign, channel, spend,
+  SUM(spend) OVER (PARTITION BY channel ORDER BY month) AS running_spend
+FROM campaigns;`}</Code>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>OVER clause anatomy</SH>
+      <Code>{`ROW_NUMBER() OVER (
+  PARTITION BY channel              -- reset counter per group (optional)
+  ORDER BY spend DESC               -- ranking/ordering criteria
+  ROWS BETWEEN UNBOUNDED PRECEDING  -- window frame (optional)
+    AND CURRENT ROW
+)`}</Code>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>ROW_NUMBER vs RANK vs DENSE_RANK</SH>
+      <p style={{fontSize:'.82rem',color:'#8b86a8',marginBottom:'.5rem',lineHeight:1.6}}>
+        Two campaigns tied at spend = 3400. Each function handles the tie differently:
+      </p>
+      <Code>{`SELECT campaign, spend,
+  ROW_NUMBER() OVER (ORDER BY spend DESC) AS rn,    -- always unique
+  RANK()       OVER (ORDER BY spend DESC) AS rnk,   -- skips after tie
+  DENSE_RANK() OVER (ORDER BY spend DESC) AS drnk   -- never skips
+FROM campaigns;`}</Code>
+      <DT {...rankData}/>
+      <Tip>RANK skips position 3 after the tie (→ 2, 2, 4). DENSE_RANK never skips (→ 2, 2, 3). Use DENSE_RANK for leaderboards; RANK for strict percentile analysis.</Tip>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>LAG / LEAD — period-over-period comparison</SH>
+      <Analogy icon="📅">
+        LAG looks back one row in the window. LEAD looks forward. This is how you build month-over-month comparisons without a self-join.
+      </Analogy>
+      <Code>{`SELECT channel, month, spend,
+  LAG(spend)  OVER (PARTITION BY channel ORDER BY month) AS prev_spend,
+  LEAD(spend) OVER (PARTITION BY channel ORDER BY month) AS next_spend,
+  ROUND(
+    (spend - LAG(spend) OVER (PARTITION BY channel ORDER BY month))
+    / NULLIF(LAG(spend) OVER (PARTITION BY channel ORDER BY month), 0) * 100
+  , 1) AS mom_pct_change
+FROM campaigns
+ORDER BY channel, month;`}</Code>
+      <Err>Dividing directly by LAG() without guarding against NULL or zero. The first row of each partition has no previous value — wrap the denominator in NULLIF(..., 0).</Err>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>NTILE — quartile and decile segmentation</SH>
+      <Analogy icon="🎚️">
+        NTILE splits a ranked list into N equal buckets. NTILE(4) = quartiles: bucket 1 is the top 25%, bucket 4 the bottom 25%. The SQL equivalent of Excel's QUARTILE function — applied row by row.
+      </Analogy>
+      <Code>{`SELECT campaign, channel, spend, conversions,
+  NTILE(4)  OVER (ORDER BY spend DESC)       AS spend_quartile,
+  NTILE(10) OVER (ORDER BY conversions DESC) AS conv_decile
+FROM campaigns;
+-- Q1 = highest-spend campaigns
+-- Use for RFM segmentation, email list tiering, budget allocation`}</Code>
+    </div>
+  );
+}
+
+function TabCTEs() {
+  return (
+    <div className="fade-up">
+      <SH>CTE vs Subquery</SH>
+      <Analogy icon="📝">
+        A subquery is a note scribbled in the margin — readable once, hard to reuse. A CTE is a labelled sticky note on your desk: named, reusable, and the query stays readable even months later.
+      </Analogy>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:'.85rem',marginBottom:'.85rem'}}>
+        <div>
+          <p style={{fontSize:'.68rem',color:'#ce9178',marginBottom:'.38rem',fontWeight:700,letterSpacing:'.05em',textTransform:'uppercase'}}>Subquery</p>
+          <Code>{`SELECT channel, total_spend
+FROM (
+  SELECT channel,
+    SUM(spend) AS total_spend
+  FROM campaigns
+  GROUP BY channel
+) AS sub
+WHERE total_spend > 2000;`}</Code>
+        </div>
+        <div>
+          <p style={{fontSize:'.68rem',color:'#13d6c1',marginBottom:'.38rem',fontWeight:700,letterSpacing:'.05em',textTransform:'uppercase'}}>CTE</p>
+          <Code>{`WITH channel_totals AS (
+  SELECT channel,
+    SUM(spend) AS total_spend
+  FROM campaigns
+  GROUP BY channel
+)
+SELECT channel, total_spend
+FROM channel_totals
+WHERE total_spend > 2000;`}</Code>
+        </div>
+      </div>
+      <Tip>CTEs win on readability and reusability. If you reference the same logic more than once, it must be a CTE. The query planner in most databases materialises them only once.</Tip>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>Chained CTEs — build step by step</SH>
+      <Code>{`WITH
+channel_totals AS (
+  SELECT channel,
+    SUM(spend)       AS spend,
+    SUM(conversions) AS convs
+  FROM campaigns
+  GROUP BY channel
+),
+with_cpa AS (
+  SELECT *,
+    ROUND(spend::numeric / NULLIF(convs, 0), 2) AS cpa
+  FROM channel_totals
+),
+ranked AS (
+  SELECT *, RANK() OVER (ORDER BY cpa ASC) AS cpa_rank
+  FROM with_cpa
+)
+SELECT * FROM ranked WHERE cpa_rank <= 3;`}</Code>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>Correlated vs non-correlated subquery</SH>
+      <Code>{`-- Non-correlated: executes ONCE, result is constant
+SELECT campaign, spend
+FROM campaigns
+WHERE spend > (SELECT AVG(spend) FROM campaigns);
+
+-- Correlated: executes once PER ROW in the outer query
+SELECT campaign, channel, spend
+FROM campaigns c1
+WHERE spend > (
+  SELECT AVG(spend)
+  FROM campaigns c2
+  WHERE c2.channel = c1.channel  -- references outer row
+);`}</Code>
+      <Err>Using a correlated subquery when a window function or JOIN solves it equally well. The correlated version re-runs the inner query for every single row in the outer table.</Err>
+
+      <div style={{height:'1.3rem'}}/>
+      <SH>Recursive CTE — generate a date series</SH>
+      <Analogy icon="🔁">
+        A recursive CTE calls itself, adding one row per iteration until a stop condition is met. Standard use: generate every month in a range without needing a calendar table.
+      </Analogy>
+      <Code>{`-- PostgreSQL
+WITH RECURSIVE month_series AS (
+  SELECT DATE '2026-01-01' AS month_start         -- anchor query
+  UNION ALL
+  SELECT month_start + INTERVAL '1 month'         -- recursive step
+  FROM month_series
+  WHERE month_start < DATE '2026-06-01'           -- stop condition
+)
+SELECT month_start FROM month_series;
+
+-- BigQuery
+WITH RECURSIVE month_series AS (
+  SELECT DATE '2026-01-01' AS month_start
+  UNION ALL
+  SELECT DATE_ADD(month_start, INTERVAL 1 MONTH)
+  FROM month_series
+  WHERE month_start < DATE '2026-06-01'
+)`}</Code>
+      <Tip>The anchor query (first SELECT) must not reference the CTE name. MySQL 8+, PostgreSQL, BigQuery and SQL Server all support recursive CTEs.</Tip>
+    </div>
+  );
+}
+
+function TabOptimization() {
+  const antiPatterns = [
+    { bad:'SELECT *',
+      why:'Reads every column, including unused ones. Prevents index-only scans. On wide tables, doubles or triples I/O.',
+      fix:'List only the columns you need: SELECT id, campaign, spend.' },
+    { bad:'WHERE LOWER(campaign) = \'black friday\'',
+      why:'Applying a function to an indexed column disables the index. The DB performs a full table scan.',
+      fix:'Store data in consistent casing, or create a functional index: CREATE INDEX ON campaigns (LOWER(campaign)).' },
+    { bad:'WHERE id::text = \'5\'',
+      why:'Casting the column forces a full scan even when id has an index. The cast happens on every row.',
+      fix:'Cast the value, not the column: WHERE id = 5.' },
+    { bad:'SELECT DISTINCT col FROM huge_table',
+      why:'Forces a sort or hash of the entire result set. Extremely expensive at millions of rows.',
+      fix:'Use GROUP BY col, or an EXISTS / IN with a targeted subquery.' },
+  ];
+  return (
+    <div className="fade-up">
+      <SH>Four anti-patterns that do not scale</SH>
+      <Analogy icon="🏋️">
+        SELECT * is like ordering the entire menu when you only want the soup. The database fetches, transfers, and serialises every column — columns you never use. On a 40-column table, that is 40× the I/O for a 1-column need.
+      </Analogy>
+      <div style={{display:'flex',flexDirection:'column',gap:'.65rem',marginBottom:'1.1rem'}}>
+        {antiPatterns.map((p,i)=>(
+          <div key={i} className="card" style={{padding:'.82rem 1rem'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'.55rem',marginBottom:'.32rem',flexWrap:'wrap'}}>
+              <span className="step-pill">{i+1}</span>
+              <code style={{fontFamily:'DM Mono,monospace',fontSize:'.76rem',color:'#f87171'}}>{p.bad}</code>
+            </div>
+            <p style={{fontSize:'.79rem',color:'#8b86a8',lineHeight:1.6,marginBottom:'.28rem'}}>{p.why}</p>
+            <p style={{fontSize:'.78rem',color:'#6ee7b7'}}><strong>Fix: </strong>{p.fix}</p>
+          </div>
+        ))}
+      </div>
+
+      <SH>Reading EXPLAIN ANALYZE</SH>
+      <Code>{`EXPLAIN ANALYZE
+SELECT channel, SUM(spend)
+FROM campaigns
+WHERE month = '2025-11'
+GROUP BY channel;`}</Code>
+      <div style={{background:'#0d0b1e',border:'1px solid #1e1b46',borderRadius:8,
+        padding:'.8rem 1rem',fontFamily:'DM Mono,monospace',fontSize:'.71rem',
+        lineHeight:1.9,color:'#8b86a8',marginTop:'.55rem',overflowX:'auto',whiteSpace:'pre'}}>
+{`HashAggregate  (cost=12.50..13.00 rows=3) (actual time=0.09..0.10 rows=3)
+  Group Key: channel
+  ->  Seq Scan on campaigns  (cost=0.00..12.25 rows=50) (actual time=0.02..0.04)
+        Filter: (month = '2025-11')
+        Rows Removed by Filter: 6
+Planning Time: 0.08 ms   |   Execution Time: 0.21 ms`}
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:'.38rem',margin:'.75rem 0 1.3rem'}}>
+        {[
+          ['Seq Scan','Full table scan — no index used. Investigate on large tables.','#f87171'],
+          ['Index Scan','Using an index. Expected for selective WHERE clauses.','#6ee7b7'],
+          ['cost=X..Y','Startup cost vs total cost. Lower is better. Planner estimates.','#b5cea8'],
+          ['actual time','Real milliseconds per loop. Compare with cost to spot bad estimates.','#13d6c1'],
+        ].map(([term,def,col])=>(
+          <div key={term} style={{display:'flex',gap:'.75rem',alignItems:'baseline',flexWrap:'wrap'}}>
+            <code style={{fontFamily:'DM Mono,monospace',fontSize:'.72rem',color:col,minWidth:115,flexShrink:0}}>{term}</code>
+            <span style={{fontSize:'.77rem',color:'#8b86a8'}}>{def}</span>
+          </div>
+        ))}
+      </div>
+
+      <SH>SQL vs Excel vs Python vs Power BI</SH>
+      <div style={{overflowX:'auto',marginTop:'.5rem'}}>
+        <table className="dt">
+          <thead><tr>
+            {['Criterion','SQL','Excel','Python','Power BI'].map(h=><th key={h}>{h}</th>)}
+          </tr></thead>
+          <tbody>
+            {[
+              ['Data volume','Millions+ rows','~1 M rows','Unlimited (RAM)','~10 M rows'],
+              ['Data source','Databases','Files / manual','APIs, files, DBs','Files, DBs, APIs'],
+              ['Reproducibility','High','Low','High','Medium'],
+              ['Output audience','Analysts / devs','Business users','Developers','Business users'],
+              ['Transformation depth','Very high','Medium','Very high','Medium'],
+              ['Real-time refresh','Yes (live)','No','Depends on setup','Yes (Power Query)'],
+              ['Learning curve','Medium','Low','High','Medium'],
+            ].map((r,i)=>(
+              <tr key={i}>{r.map((c,j)=>(
+                <td key={j} style={{color:j===1?'#13d6c1':undefined}}>{c}</td>
+              ))}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Tip>SQL is the right tool when data lives in a database, the transformation is complex, and reproducibility matters. Use Power BI or Excel for final presentation to non-technical stakeholders.</Tip>
+    </div>
+  );
+}
+/* ── PHASE 4 ── */
+
+function TabCases() {
+  const cases = [
+    { id:'topn',    label:'Top N per category' },
+    { id:'running', label:'Running totals' },
+    { id:'funnel',  label:'Conversion funnel' },
+    { id:'rfm',     label:'RFM segmentation' },
+    { id:'cohort',  label:'Cohort retention' },
+    { id:'gaps',    label:'Gap detection' },
+  ];
+  const [active, setActive] = React.useState('topn');
+
+  const content = {
+    topn: {
+      analogy: { icon:'🏆', text:'Leaderboard per channel — the top 2 campaigns by spend within each channel, not globally. A single ROW_NUMBER with PARTITION BY replaces three separate queries.' },
+      code:`-- Top 2 campaigns per channel by spend
+WITH ranked AS (
+  SELECT *,
+    ROW_NUMBER() OVER (
+      PARTITION BY channel
+      ORDER BY spend DESC
+    ) AS rn
+  FROM campaigns
+)
+SELECT campaign, channel, spend
+FROM ranked
+WHERE rn <= 2
+ORDER BY channel, spend DESC;`,
+      tip:'Use ROW_NUMBER (not RANK) here — ties are broken arbitrarily, but you get exactly N rows per group.'
+    },
+    running: {
+      analogy: { icon:'📈', text:'Cumulative spend per channel month by month — the SQL equivalent of a running total column in Excel. One window function, no self-join.' },
+      code:`SELECT
+  month,
+  channel,
+  spend,
+  SUM(spend) OVER (
+    PARTITION BY channel
+    ORDER BY month
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS cumulative_channel_spend,
+  SUM(spend) OVER (
+    ORDER BY month
+    ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+  ) AS overall_running_total
+FROM campaigns
+ORDER BY month, channel;`,
+      tip:'ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW is the default frame for running totals. Omitting it is fine in PostgreSQL, but explicit is safer across dialects.'
+    },
+    funnel: {
+      analogy: { icon:'🔽', text:'How many clicks become conversions, and at what cost? One query per channel replaces a spreadsheet with pivot table, SUMIF, and manual division.' },
+      code:`SELECT
+  channel,
+  SUM(spend)                                           AS total_spend,
+  SUM(clicks)                                          AS total_clicks,
+  SUM(conversions)                                     AS total_conversions,
+  ROUND(SUM(clicks)::numeric
+        / NULLIF(SUM(spend), 0), 2)                    AS clicks_per_dollar,
+  ROUND(SUM(conversions)::numeric
+        / NULLIF(SUM(clicks), 0) * 100, 2)             AS cvr_pct,
+  ROUND(SUM(spend)::numeric
+        / NULLIF(SUM(conversions), 0), 2)              AS cpa
+FROM campaigns
+GROUP BY channel
+ORDER BY cpa ASC;`,
+      tip:'Always wrap denominators in NULLIF(..., 0). A channel with zero clicks produces a division-by-zero error that silently kills the entire query on some databases.'
+    },
+    rfm: {
+      analogy: { icon:'🎯', text:'RFM scores every channel on three dimensions: how recently it was active (Recency), how often (Frequency), and how much it spent (Monetary). NTILE turns raw numbers into ranked buckets.' },
+      code:`WITH rfm_raw AS (
+  SELECT
+    channel,
+    MAX(month)   AS last_active,
+    COUNT(*)     AS frequency,
+    SUM(spend)   AS monetary
+  FROM campaigns
+  GROUP BY channel
+),
+rfm_scored AS (
+  SELECT *,
+    NTILE(3) OVER (ORDER BY last_active DESC) AS r_score,
+    NTILE(3) OVER (ORDER BY frequency DESC)  AS f_score,
+    NTILE(3) OVER (ORDER BY monetary DESC)   AS m_score
+  FROM rfm_raw
+)
+SELECT
+  channel, last_active, frequency, monetary,
+  r_score, f_score, m_score,
+  r_score + f_score + m_score AS rfm_total,
+  CASE
+    WHEN r_score = 3 AND f_score >= 2 THEN 'Champions'
+    WHEN r_score >= 2 AND f_score >= 2 THEN 'Loyal'
+    WHEN r_score = 3               THEN 'Recent'
+    ELSE 'At Risk'
+  END AS segment
+FROM rfm_scored
+ORDER BY rfm_total DESC;`,
+      tip:'NTILE(3) creates equal thirds. With only 3 channels the buckets are trivial — on real customer tables with thousands of rows, this scales without changes.'
+    },
+    cohort: {
+      analogy: { icon:'👥', text:'Cohort analysis answers: of the channels that first ran in June, how many were still active in July, August...? Built entirely in SQL — no pivot table needed.' },
+      code:`WITH first_active AS (
+  SELECT channel, MIN(month) AS cohort_month
+  FROM campaigns
+  GROUP BY channel
+),
+activity AS (
+  SELECT
+    c.channel,
+    c.month,
+    fa.cohort_month,
+    -- months since cohort started
+    (EXTRACT(YEAR  FROM c.month::date)
+      - EXTRACT(YEAR  FROM fa.cohort_month::date)) * 12
+    + EXTRACT(MONTH FROM c.month::date)
+    - EXTRACT(MONTH FROM fa.cohort_month::date)   AS period
+  FROM campaigns c
+  JOIN first_active fa ON c.channel = fa.channel
+)
+SELECT
+  cohort_month,
+  period,
+  COUNT(DISTINCT channel) AS active_channels
+FROM activity
+GROUP BY cohort_month, period
+ORDER BY cohort_month, period;`,
+      tip:'On a real customer table, replace channel with customer_id and month with DATE_TRUNC(\'month\', purchase_date). The structure stays identical.'
+    },
+    gaps: {
+      analogy: { icon:'🕳️', text:'Which months had no campaign for a given channel? A CROSS JOIN generates every expected combination, then a LEFT JOIN finds the missing ones.' },
+      code:`WITH all_months AS (
+  SELECT DISTINCT month FROM campaigns
+),
+all_channels AS (
+  SELECT DISTINCT channel FROM campaigns
+),
+expected AS (
+  SELECT c.channel, m.month
+  FROM all_channels c
+  CROSS JOIN all_months m
+),
+actual AS (
+  SELECT DISTINCT channel, month FROM campaigns
+)
+SELECT
+  e.channel,
+  e.month AS gap_month
+FROM expected e
+LEFT JOIN actual a
+  ON e.channel = a.channel
+  AND e.month  = a.month
+WHERE a.month IS NULL
+ORDER BY e.channel, e.month;`,
+      tip:'This pattern detects any missing combination in a time series. Replace campaigns with orders, sessions, or log entries and it works identically.'
+    },
+  };
+
+  const c = content[active];
+  return (
+    <div className="fade-up">
+      <div style={{display:'flex',flexWrap:'wrap',gap:'.42rem',marginBottom:'1.1rem'}}>
+        {cases.map(cs=>(
+          <button key={cs.id} onClick={()=>setActive(cs.id)}
+            style={{background:active===cs.id?'rgba(19,214,193,.15)':'transparent',
+              border:`1px solid ${active===cs.id?'#13d6c1':'#1e1b46'}`,borderRadius:6,
+              padding:'.3rem .72rem',fontFamily:'Sora,sans-serif',fontSize:'.75rem',fontWeight:600,
+              color:active===cs.id?'#13d6c1':'#504d70',cursor:'pointer',transition:'all .16s'}}>
+            {cs.label}
+          </button>
+        ))}
+      </div>
+      <Analogy icon={c.analogy.icon}>{c.analogy.text}</Analogy>
+      <Code>{c.code}</Code>
+      <Tip>{c.tip}</Tip>
+      <div style={{height:'.9rem'}}/>
+      <SH>Dataset used in all examples</SH>
+      <DT {...DS_CAMPAIGNS}/>
+    </div>
+  );
+}
+
+function TabCheatSheet() {
+  const groups = [
+    { label:'Select & Filter', color:'#4ec9b0', cards:[
+      { title:'Top N rows',        code:'SELECT ...\nFROM t\nORDER BY col DESC\nLIMIT N;' },
+      { title:'Distinct values',   code:'SELECT DISTINCT col\nFROM t;' },
+      { title:'Pattern match',     code:"WHERE col LIKE '%word%'\n-- BigQuery: LIKE / CONTAINS" },
+      { title:'Range filter',      code:'WHERE col BETWEEN 100 AND 500' },
+      { title:'Null guard',        code:'WHERE col IS NOT NULL\nCOALESCE(col, 0)' },
+    ]},
+    { label:'Aggregation', color:'#ce9178', cards:[
+      { title:'Group totals',      code:'SELECT col, COUNT(*), SUM(val)\nFROM t\nGROUP BY col;' },
+      { title:'Filter groups',     code:'GROUP BY col\nHAVING COUNT(*) > 5' },
+      { title:'Conditional sum',   code:'SUM(CASE WHEN cond\n     THEN val END)' },
+      { title:'Count distinct',    code:'COUNT(DISTINCT col)' },
+      { title:'Subtotals',         code:'GROUP BY ROLLUP(a, b)\n-- adds subtotal rows' },
+    ]},
+    { label:'Joins', color:'#b5cea8', cards:[
+      { title:'Inner join',        code:'FROM a\nJOIN b ON a.id = b.a_id' },
+      { title:'Left — find gaps',  code:'FROM a\nLEFT JOIN b ON a.id = b.a_id\nWHERE b.id IS NULL' },
+      { title:'Self join',         code:'FROM t emp\nJOIN t mgr\n  ON emp.manager_id = mgr.id' },
+      { title:'Cross join grid',   code:'FROM dates\nCROSS JOIN channels\n-- N × M rows' },
+    ]},
+    { label:'Window Functions', color:'#dcdcaa', cards:[
+      { title:'Row ranking',       code:'ROW_NUMBER() OVER\n  (ORDER BY col DESC)' },
+      { title:'Running total',     code:'SUM(val) OVER\n  (ORDER BY date\n   ROWS UNBOUNDED PRECEDING)' },
+      { title:'Prev period',       code:'LAG(val) OVER\n  (PARTITION BY grp\n   ORDER BY date)' },
+      { title:'Quartiles',         code:'NTILE(4) OVER\n  (ORDER BY val DESC)' },
+      { title:'First in group',    code:'FIRST_VALUE(val) OVER\n  (PARTITION BY grp\n   ORDER BY date)' },
+    ]},
+    { label:'CTEs & Subqueries', color:'#6ee7b7', cards:[
+      { title:'Basic CTE',         code:'WITH cte AS (\n  SELECT ...\n)\nSELECT * FROM cte;' },
+      { title:'Chained CTEs',      code:'WITH a AS (...),\n     b AS (...)\nSELECT * FROM b;' },
+      { title:'Above average',     code:'WHERE val > (\n  SELECT AVG(val) FROM t\n)' },
+      { title:'Exists check',      code:'WHERE EXISTS (\n  SELECT 1 FROM t2\n  WHERE t2.id = t.id\n)' },
+    ]},
+    { label:'Dates', color:'#8b86a8', cards:[
+      { title:'Truncate to month', code:"DATE_TRUNC('month', date_col)\n-- BQ: DATE_TRUNC(date_col, MONTH)" },
+      { title:'Extract part',      code:'EXTRACT(YEAR FROM date_col)\nEXTRACT(MONTH FROM date_col)' },
+      { title:'Date difference',   code:"-- PostgreSQL\ndate1 - date2\n-- SQL Server\nDATEDIFF(day, d1, d2)" },
+    ]},
+  ];
+
+  return (
+    <div className="fade-up">
+      <p style={{fontSize:'.84rem',color:'#8b86a8',marginBottom:'1.2rem',lineHeight:1.65}}>
+        25 patterns covering 90% of analyst queries. Hover any card to highlight it.
+      </p>
+      {groups.map(g=>(
+        <div key={g.label} style={{marginBottom:'1.4rem'}}>
+          <div style={{display:'flex',alignItems:'center',gap:'.5rem',marginBottom:'.65rem'}}>
+            <span style={{width:10,height:10,borderRadius:'50%',background:g.color,display:'inline-block',flexShrink:0}}/>
+            <span style={{fontSize:'.72rem',fontWeight:700,color:g.color,letterSpacing:'.07em',textTransform:'uppercase'}}>{g.label}</span>
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(190px,1fr))',gap:'.55rem'}}>
+            {g.cards.map(card=>(
+              <div key={card.title} className="cs-card">
+                <p style={{fontSize:'.73rem',fontWeight:700,color:'#c8c4e8',marginBottom:'.38rem'}}>{card.title}</p>
+                <pre style={{fontFamily:'DM Mono,monospace',fontSize:'.68rem',color:g.color,
+                  lineHeight:1.75,margin:0,whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{card.code}</pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+/* ── PHASE 5 ── */
+
+/* WHERE BUILDER — in-memory dataset */
+const FIELDS = [
+  { name:'channel',     type:'string', label:'channel' },
+  { name:'spend',       type:'number', label:'spend' },
+  { name:'clicks',      type:'number', label:'clicks' },
+  { name:'conversions', type:'number', label:'conversions' },
+  { name:'month',       type:'string', label:'month' },
+];
+const STR_OPS = ['=','!=','LIKE','NOT LIKE'];
+const NUM_OPS = ['=','!=','>','<','>=','<='];
+
+const CAMPAIGN_DATA = DS_CAMPAIGNS.rows.map(r => ({
+  id:r[0], campaign:r[1], channel:r[2], spend:r[3],
+  clicks:r[4], conversions:r[5], month:r[6]
+}));
+
+const evalCond = (row, c) => {
+  if (!c.value && c.value !== 0) return true;
+  const v = row[c.field];
+  const cv = c.ftype === 'number' ? Number(c.value) : c.value;
+  switch(c.operator) {
+    case '=':        return c.ftype === 'number' ? v === cv : String(v) === cv;
+    case '!=':       return c.ftype === 'number' ? v !== cv : String(v) !== cv;
+    case '>':        return v > cv;
+    case '<':        return v < cv;
+    case '>=':       return v >= cv;
+    case '<=':       return v <= cv;
+    case 'LIKE':     return String(v).toLowerCase().includes(cv.toLowerCase());
+    case 'NOT LIKE': return !String(v).toLowerCase().includes(cv.toLowerCase());
+    default:         return true;
+  }
+};
+
+const buildSQL = (conds) => {
+  if (!conds.length) return 'SELECT *\nFROM campaigns;';
+  const clauses = conds.map((c, i) => {
+    const prefix = i === 0 ? 'WHERE' : c.conj;
+    let val;
+    if (c.operator === 'LIKE' || c.operator === 'NOT LIKE') val = `'%${c.value}%'`;
+    else if (c.ftype === 'string') val = `'${c.value}'`;
+    else val = c.value !== '' ? c.value : '0';
+    return `  ${prefix} ${c.field} ${c.operator} ${val}`;
+  }).join('\n');
+  return `SELECT *\nFROM campaigns\n${clauses};`;
+};
+
+function WhereBuilder() {
+  const [conds, setConds] = useState([]);
+  const uid = React.useRef(0);
+
+  const addCond = () => setConds(p => [...p, {
+    id: uid.current++, field:'channel', operator:'=',
+    value:'email', conj:'AND', ftype:'string'
+  }]);
+
+  const update = (id, patch) => setConds(p => p.map(c => {
+    if (c.id !== id) return c;
+    const next = {...c, ...patch};
+    if (patch.field) {
+      const f = FIELDS.find(f => f.name === patch.field);
+      next.ftype    = f.type;
+      next.operator = f.type === 'number' ? '>' : '=';
+      next.value    = f.type === 'number' ? '1000' : '';
+    }
+    return next;
+  }));
+
+  const filtered = CAMPAIGN_DATA.filter(row => {
+    if (!conds.length) return true;
+    let r = evalCond(row, conds[0]);
+    for (let i = 1; i < conds.length; i++)
+      r = conds[i].conj === 'AND' ? r && evalCond(row, conds[i]) : r || evalCond(row, conds[i]);
+    return r;
+  });
+
+  const sel = {
+    background:'#0d0b1e', border:'1px solid #2a2560', borderRadius:5,
+    padding:'.28rem .5rem', color:'#e8e6f0', fontFamily:'DM Mono,monospace',
+    fontSize:'.73rem', outline:'none', cursor:'pointer',
+  };
+
+  return (
+    <div className="fade-up">
+      <p style={{fontSize:'.83rem',color:'#8b86a8',marginBottom:'1rem',lineHeight:1.65}}>
+        Add filters below and watch the SQL and result table update in real time. All filtering runs on the 8-row campaign dataset in memory — no server needed.
+      </p>
+
+      {conds.length > 0 && (
+        <div style={{display:'flex',flexDirection:'column',gap:'.4rem',marginBottom:'.85rem'}}>
+          {conds.map((c, i) => {
+            const ops = c.ftype === 'number' ? NUM_OPS : STR_OPS;
+            return (
+              <div key={c.id} style={{display:'flex',alignItems:'center',gap:'.38rem',flexWrap:'wrap'}}>
+                {i === 0
+                  ? <span style={{...sel,color:'#13d6c1',minWidth:60,textAlign:'center',cursor:'default',fontWeight:700}}>WHERE</span>
+                  : <select value={c.conj} onChange={e=>update(c.id,{conj:e.target.value})} style={{...sel,minWidth:60}}>
+                      <option>AND</option><option>OR</option>
+                    </select>
+                }
+                <select value={c.field} onChange={e=>update(c.id,{field:e.target.value})} style={sel}>
+                  {FIELDS.map(f=><option key={f.name} value={f.name}>{f.label}</option>)}
+                </select>
+                <select value={c.operator} onChange={e=>update(c.id,{operator:e.target.value})} style={sel}>
+                  {ops.map(op=><option key={op} value={op}>{op}</option>)}
+                </select>
+                <input value={c.value} onChange={e=>update(c.id,{value:e.target.value})}
+                  style={{...sel,minWidth:90,cursor:'text'}} placeholder={c.ftype==='number'?'number':'value'}/>
+                <button onClick={()=>setConds(p=>p.filter(x=>x.id!==c.id))}
+                  style={{...sel,minWidth:28,textAlign:'center',transition:'all .15s'}}
+                  onMouseOver={e=>Object.assign(e.currentTarget.style,{borderColor:'#ef4444',color:'#f87171'})}
+                  onMouseOut={e=>Object.assign(e.currentTarget.style,{borderColor:'#2a2560',color:'#e8e6f0'})}>×</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div style={{display:'flex',gap:'.5rem',marginBottom:'1.2rem'}}>
+        <button className="btn-primary" onClick={addCond}>+ Add condition</button>
+        {conds.length > 0 && <button className="btn-ghost" onClick={()=>setConds([])}>Clear all</button>}
+      </div>
+
+      <SH>Generated SQL</SH>
+      <Code>{buildSQL(conds)}</Code>
+
+      <div style={{display:'flex',alignItems:'center',gap:'.65rem',margin:'1.1rem 0 .45rem'}}>
+        <SH>Results</SH>
+        <span className="result-badge">{filtered.length} / {CAMPAIGN_DATA.length} rows</span>
+      </div>
+      <DT headers={DS_CAMPAIGNS.headers}
+        rows={filtered.map(r=>[r.id,r.campaign,r.channel,r.spend,r.clicks,r.conversions,r.month])}/>
+      {filtered.length === 0 &&
+        <p style={{textAlign:'center',color:'#504d70',fontSize:'.8rem',padding:'1.2rem 0',
+          fontFamily:'DM Mono,monospace'}}>No rows match these conditions.</p>}
+    </div>
+  );
+}
+
+/* ── QUIZ ── */
+const QUIZ = [
+  { q:'In which order does SQL actually execute a query?',
+    opts:['SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY',
+          'FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY',
+          'FROM → SELECT → WHERE → GROUP BY → HAVING → ORDER BY',
+          'WHERE → FROM → GROUP BY → SELECT → ORDER BY → HAVING'],
+    correct:1,
+    explain:'FROM runs first — the database must identify the table before it can filter, group, or select columns. SELECT is near the end, which is why you cannot use a SELECT alias in WHERE.' },
+  { q:'A LEFT JOIN returns...',
+    opts:['Only rows that match in both tables',
+          'All rows from the right table; NULLs where the left has no match',
+          'All rows from the left table; NULLs where the right has no match',
+          'Every combination of rows from both tables'],
+    correct:2,
+    explain:'LEFT JOIN keeps every row from the left (first) table. Where no matching row exists in the right table, SQL fills those columns with NULL.' },
+  { q:'Two rows share position 2 in a ranking. What position comes next in RANK() vs DENSE_RANK()?',
+    opts:['RANK → 3, DENSE_RANK → 3',
+          'RANK → 4, DENSE_RANK → 3',
+          'RANK → 3, DENSE_RANK → 4',
+          'Both skip to 4'],
+    correct:1,
+    explain:'RANK skips the position consumed by the tie (2, 2 → 4). DENSE_RANK never skips — it simply continues (2, 2 → 3). Use DENSE_RANK for customer-facing leaderboards.' },
+  { q:'You need to keep only channels where total spend > 5000. Which clause is correct?',
+    opts:['WHERE SUM(spend) > 5000',
+          'HAVING SUM(spend) > 5000',
+          'Either — they are interchangeable after GROUP BY',
+          'WHERE spend > 5000 GROUP BY channel'],
+    correct:1,
+    explain:'WHERE runs before GROUP BY and cannot see aggregate results. HAVING runs after GROUP BY and is designed exactly for filtering on aggregated values.' },
+  { q:'Why does WHERE LOWER(channel) = \'email\' prevent index usage on the channel column?',
+    opts:['It causes a syntax error in most databases',
+          'The function transforms each value at query time, so the index on the original column cannot be used',
+          'LOWER() is not supported inside WHERE clauses',
+          'It returns incorrect results due to locale differences'],
+    correct:1,
+    explain:"The index is built on the raw column values. Applying LOWER() means the database must compute the transformed value for every row — it can't look up the index. Fix: store data in a consistent case or create a functional index." },
+];
+
+function TabQuiz() {
+  const [qi, setQi]       = useState(0);
+  const [answers, setAns] = useState({});
+  const [done, setDone]   = useState(false);
+
+  const pick = (opt) => {
+    if (answers[qi] !== undefined) return;
+    setAns(p => ({...p, [qi]: opt}));
+  };
+  const next = () => {
+    if (qi < QUIZ.length - 1) setQi(q => q + 1);
+    else setDone(true);
+  };
+
+  const score = QUIZ.filter((q,i) => answers[i] === q.correct).length;
+
+  if (done) {
+    const pct = Math.round(score / QUIZ.length * 100);
+    const emoji = pct === 100 ? '🏆' : pct >= 80 ? '🎯' : pct >= 60 ? '📈' : '📚';
+    return (
+      <div className="fade-up" style={{textAlign:'center',padding:'2.5rem 1rem'}}>
+        <div style={{fontSize:'3rem',marginBottom:'.6rem'}}>{emoji}</div>
+        <p style={{fontSize:'1.4rem',fontWeight:800,color:'#e8e6f0',marginBottom:'.3rem'}}>{score} / {QUIZ.length}</p>
+        <p style={{fontSize:'.88rem',color:'#8b86a8',marginBottom:'1.8rem'}}>{pct}% correct</p>
+        {QUIZ.map((q,i) => (
+          <div key={i} className="card" style={{textAlign:'left',marginBottom:'.6rem',
+            borderColor:answers[i]===q.correct?'rgba(16,185,129,.35)':'rgba(239,68,68,.25)'}}>
+            <p style={{fontSize:'.78rem',fontWeight:600,color:'#c8c4e8',marginBottom:'.3rem'}}>
+              {answers[i]===q.correct?'✓':'✗'} Q{i+1}: {q.q}
+            </p>
+            <p style={{fontSize:'.74rem',color:'#6b6890',lineHeight:1.6}}>{q.explain}</p>
+          </div>
+        ))}
+        <button className="btn-primary" style={{marginTop:'.8rem'}}
+          onClick={()=>{setQi(0);setAns({});setDone(false);}}>Retake quiz</button>
+      </div>
+    );
+  }
+
+  const q = QUIZ[qi];
+  const ans = answers[qi];
+  const answered = ans !== undefined;
+
+  return (
+    <div className="fade-up">
+      {/* Progress */}
+      <div style={{display:'flex',alignItems:'center',gap:'.7rem',marginBottom:'1.2rem'}}>
+        {QUIZ.map((_,i) => (
+          <div key={i} style={{height:3,flex:1,borderRadius:2,
+            background: i < qi ? '#13d6c1' : i === qi ? '#0a9a88' : '#1e1b46',
+            transition:'background .2s'}}/>
+        ))}
+        <span style={{fontFamily:'DM Mono,monospace',fontSize:'.7rem',color:'#504d70',flexShrink:0}}>
+          {qi+1}/{QUIZ.length}
+        </span>
+      </div>
+
+      {/* Question */}
+      <div className="card" style={{marginBottom:'.9rem',padding:'1rem 1.1rem'}}>
+        <p style={{fontSize:'.9rem',fontWeight:600,color:'#e8e6f0',lineHeight:1.6}}>{q.q}</p>
+      </div>
+
+      {/* Options */}
+      <div style={{display:'flex',flexDirection:'column',gap:'.45rem',marginBottom:'1rem'}}>
+        {q.opts.map((opt, oi) => {
+          let cls = 'qopt';
+          if (answered) {
+            if (oi === q.correct) cls += ' correct';
+            else if (oi === ans)  cls += ' wrong';
+          }
+          return (
+            <button key={oi} className={cls} disabled={answered} onClick={()=>pick(oi)}>
+              <span style={{fontFamily:'DM Mono,monospace',fontSize:'.7rem',
+                color:'#504d70',marginRight:'.55rem'}}>{String.fromCharCode(65+oi)}.</span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Explanation */}
+      {answered && (
+        <div className={ans === q.correct ? 'tip-box' : 'error-box'} style={{marginBottom:'1rem'}}>
+          <strong style={{color: ans === q.correct ? '#34d399' : '#f87171'}}>
+            {ans === q.correct ? '✓ Correct — ' : '✗ Incorrect — '}
+          </strong>
+          {q.explain}
+        </div>
+      )}
+
+      {/* Navigation */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <span style={{fontFamily:'DM Mono,monospace',fontSize:'.72rem',color:'#504d70'}}>
+          {answered && ans === q.correct ? '🎯 +1 point' : answered ? '—' : 'Select an answer'}
+        </span>
+        <button className="btn-primary" disabled={!answered} onClick={next}>
+          {qi < QUIZ.length - 1 ? 'Next →' : 'See results'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── TABS CONFIG ── */
+const TABS = [
+  { id:'fundamentals', label:'Fundamentos' },
+  { id:'joins',        label:'JOINs' },
+  { id:'window',       label:'Window Fns' },
+  { id:'aggregation',  label:'Agregación' },
+  { id:'ctes',         label:'CTEs' },
+  { id:'optimization', label:'Optimización' },
+  { id:'cases',        label:'Casos Reales' },
+  { id:'cheatsheet',   label:'Cheat Sheet' },
+  { id:'simulator',    label:'WHERE Builder' },
+  { id:'quiz',         label:'Quiz' },
+];
+
+const PlaceholderTab = ({ label }) => (
+  <div className="fade-up" style={{textAlign:'center',padding:'4rem 1rem',color:'#504d70'}}>
+    <div style={{fontSize:'2.2rem',marginBottom:'.6rem'}}>🔧</div>
+    <p style={{fontFamily:'DM Mono,monospace',fontSize:'.82rem'}}>{label} — coming next phase</p>
+  </div>
+);
+
+/* ── APP ── */
+function App() {
+  const [tab, setTab] = useState('fundamentals');
+
+  const renderTab = () => {
+    const map = {
+      fundamentals: typeof TabFundamentals !== 'undefined' ? <TabFundamentals /> : <PlaceholderTab label="Fundamentos" />,
+      joins:        typeof TabJoins        !== 'undefined' ? <TabJoins />        : <PlaceholderTab label="JOINs" />,
+      window:       typeof TabWindow       !== 'undefined' ? <TabWindow />       : <PlaceholderTab label="Window Functions" />,
+      aggregation:  typeof TabAggregation  !== 'undefined' ? <TabAggregation />  : <PlaceholderTab label="Agregación Avanzada" />,
+      ctes:         typeof TabCTEs         !== 'undefined' ? <TabCTEs />         : <PlaceholderTab label="CTEs y Subqueries" />,
+      optimization: typeof TabOptimization !== 'undefined' ? <TabOptimization /> : <PlaceholderTab label="Optimización" />,
+      cases:        typeof TabCases        !== 'undefined' ? <TabCases />        : <PlaceholderTab label="Casos Reales" />,
+      cheatsheet:   typeof TabCheatSheet   !== 'undefined' ? <TabCheatSheet />   : <PlaceholderTab label="Cheat Sheet" />,
+      simulator:    <WhereBuilder />,
+      quiz:         <TabQuiz />,
+    };
+    return map[tab] || <PlaceholderTab label={tab} />;
+  };
+
+  return (
+    <div style={{maxWidth:860,margin:'0 auto',padding:'0 1rem 2rem'}}>
+
+      {/* HERO */}
+      <header className="hero-grid" style={{borderRadius:14,border:'1px solid #1e1b46',
+        margin:'1.4rem 0 1rem',padding:'2rem 1.5rem 1.6rem',position:'relative',overflow:'hidden'}}>
+        <div style={{position:'absolute',top:18,right:22,width:8,height:8,borderRadius:'50%',
+          background:'#13d6c1',animation:'pulse-dot 2.2s ease-in-out infinite'}}/>
+        <div style={{display:'flex',alignItems:'center',gap:'.7rem',marginBottom:'1rem',flexWrap:'wrap'}}>
+          <a href="https://valescabravo.github.io/"
+             style={{display:'inline-flex',alignItems:'center',gap:'.38rem',color:'#8b86a8',
+               fontSize:'.76rem',textDecoration:'none',fontFamily:'DM Mono,monospace',
+               border:'1px solid #1e1b46',borderRadius:6,padding:'.28rem .62rem',transition:'all .18s'}}
+             onMouseOver={e=>Object.assign(e.currentTarget.style,{borderColor:'#13d6c1',color:'#e8e6f0'})}
+             onMouseOut={e=>Object.assign(e.currentTarget.style,{borderColor:'#1e1b46',color:'#8b86a8'})}>
+            ← Portfolio
+          </a>
+          <Badge>SQL Analytics Lab</Badge>
+          <Badge variant="navy">2026</Badge>
+        </div>
+        <h1 style={{fontSize:'clamp(1.5rem,5vw,2.1rem)',fontWeight:800,lineHeight:1.15,
+          marginBottom:'.55rem',letterSpacing:'-.02em'}}>
+          SQL as an{' '}<span style={{color:'#13d6c1'}}>Analytical Tool</span>
+        </h1>
+        <p style={{fontSize:'.88rem',color:'#8b86a8',maxWidth:520,lineHeight:1.7}}>
+          From first SELECT to window functions and query optimisation.
+          Real marketing and business datasets throughout.
+        </p>
+        <div style={{display:'flex',gap:'.55rem',marginTop:'1.1rem',flexWrap:'wrap'}}>
+          {['PostgreSQL','BigQuery','MySQL','SQL Server'].map(d=>(
+            <span key={d} className="dialect">{d}</span>
+          ))}
+        </div>
+      </header>
+
+      {/* NAV */}
+      <nav className="tab-scroll" style={{borderBottom:'1px solid #1a1542',marginBottom:'1.5rem',
+        display:'flex',gap:'.1rem'}}>
+        {TABS.map(t=>(
+          <button key={t.id} className={`nav-tab${tab===t.id?' active':''}`}
+            onClick={()=>setTab(t.id)}>{t.label}</button>
+        ))}
+      </nav>
+
+      {/* CONTENT */}
+      <main>{renderTab()}</main>
+
+      {/* FOOTER */}
+      <footer style={{textAlign:'center',padding:'2.2rem 1rem',marginTop:'3rem',
+        borderTop:'1px solid #1a1542',color:'#504d70',fontSize:'.75rem',
+        fontFamily:'DM Mono,monospace'}}>
+        © 2026 Valesca Bravo —{' '}
+        <a href="https://valescabravo.github.io/" style={{color:'#13d6c1',textDecoration:'none'}}>
+          Interactive SQL Lab
+        </a>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
