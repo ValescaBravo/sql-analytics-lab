@@ -176,7 +176,7 @@ const Code = ({ children }) => {
 const DT = ({ headers, rows }) => (
   <div style={{overflowX:'auto',marginTop:'.6rem'}}>
     <table className="dt">
-      <thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</thead>
+      <thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead>
       <tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c ?? <span style={{color:'#504d70'}}>NULL</span>}</td>)}</tr>)}</tbody>
     </table>
   </div>
@@ -190,6 +190,9 @@ const SH = ({ children }) => (
     {children}
   </h2>
 );
+
+/* ── TAB CONTENT PLACEHOLDERS ── */
+/* ── PHASE 2 ── */
 
 /* Shared datasets */
 const DS_CAMPAIGNS = {
@@ -451,6 +454,7 @@ GROUP BY channel;`}</Code>
     </div>
   );
 }
+/* ── PHASE 3 ── */
 
 function TabWindow() {
   const rankData = {
@@ -699,7 +703,7 @@ Planning Time: 0.08 ms   |   Execution Time: 0.21 ms`}
         <table className="dt">
           <thead><tr>
             {['Criterion','SQL','Excel','Python','Power BI'].map(h=><th key={h}>{h}</th>)}
-          </thead>
+          </tr></thead>
           <tbody>
             {[
               ['Data volume','Millions+ rows','~1 M rows','Unlimited (RAM)','~10 M rows'],
@@ -721,6 +725,7 @@ Planning Time: 0.08 ms   |   Execution Time: 0.21 ms`}
     </div>
   );
 }
+/* ── PHASE 4 ── */
 
 function TabCases() {
   const cases = [
@@ -969,6 +974,7 @@ function TabCheatSheet() {
     </div>
   );
 }
+/* ── PHASE 5 ── */
 
 /* WHERE BUILDER — in-memory dataset */
 const FIELDS = [
@@ -1250,14 +1256,14 @@ function TabQuiz() {
   );
 }
 
-/* ── TABS CONFIG (Translated labels) ── */
+/* ── TABS CONFIG ── */
 const TABS = [
   { id:'fundamentals', label:'Fundamentals' },
   { id:'joins',        label:'JOINs' },
   { id:'window',       label:'Window Fns' },
   { id:'aggregation',  label:'Aggregation' },
   { id:'ctes',         label:'CTEs' },
-  { id:'optimization', label:'Optimization' },
+  { id:'optimization', label:'Optimisation' },
   { id:'cases',        label:'Real Cases' },
   { id:'cheatsheet',   label:'Cheat Sheet' },
   { id:'simulator',    label:'WHERE Builder' },
@@ -1280,9 +1286,9 @@ function App() {
       fundamentals: typeof TabFundamentals !== 'undefined' ? <TabFundamentals /> : <PlaceholderTab label="Fundamentals" />,
       joins:        typeof TabJoins        !== 'undefined' ? <TabJoins />        : <PlaceholderTab label="JOINs" />,
       window:       typeof TabWindow       !== 'undefined' ? <TabWindow />       : <PlaceholderTab label="Window Functions" />,
-      aggregation:  typeof TabAggregation  !== 'undefined' ? <TabAggregation />  : <PlaceholderTab label="Advanced Aggregation" />,
+      aggregation:  typeof TabAggregation  !== 'undefined' ? <TabAggregation />  : <PlaceholderTab label="Aggregation" />,
       ctes:         typeof TabCTEs         !== 'undefined' ? <TabCTEs />         : <PlaceholderTab label="CTEs & Subqueries" />,
-      optimization: typeof TabOptimization !== 'undefined' ? <TabOptimization /> : <PlaceholderTab label="Optimization" />,
+      optimization: typeof TabOptimization !== 'undefined' ? <TabOptimization /> : <PlaceholderTab label="Optimisation" />,
       cases:        typeof TabCases        !== 'undefined' ? <TabCases />        : <PlaceholderTab label="Real Cases" />,
       cheatsheet:   typeof TabCheatSheet   !== 'undefined' ? <TabCheatSheet />   : <PlaceholderTab label="Cheat Sheet" />,
       simulator:    <WhereBuilder />,
@@ -1294,7 +1300,7 @@ function App() {
   return (
     <div style={{maxWidth:860,margin:'0 auto',padding:'0 1rem 2rem'}}>
 
-      {/* HERO - All text English */}
+      {/* HERO */}
       <header className="hero-grid" style={{borderRadius:14,border:'1px solid #1e1b46',
         margin:'1.4rem 0 1rem',padding:'2rem 1.5rem 1.6rem',position:'relative',overflow:'hidden'}}>
         <div style={{position:'absolute',top:18,right:22,width:8,height:8,borderRadius:'50%',
