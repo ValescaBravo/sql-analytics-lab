@@ -1314,8 +1314,14 @@ function App() {
              onMouseOut={e=>Object.assign(e.currentTarget.style,{borderColor:'#1e1b46',color:'#8b86a8'})}>
             ← Portfolio
           </a>
-          <Badge>SQL Analytics Lab</Badge>
-          <Badge variant="navy">2026</Badge>
+          <a href="https://valescabravo.github.io/lab/"
+             style={{display:'inline-flex',alignItems:'center',gap:'.38rem',color:'#8b86a8',
+               fontSize:'.76rem',textDecoration:'none',fontFamily:'DM Mono,monospace',
+               border:'1px solid #1e1b46',borderRadius:6,padding:'.28rem .62rem',transition:'all .18s'}}
+             onMouseOver={e=>Object.assign(e.currentTarget.style,{borderColor:'#13d6c1',color:'#e8e6f0'})}
+             onMouseOut={e=>Object.assign(e.currentTarget.style,{borderColor:'#1e1b46',color:'#8b86a8'})}>
+            ← Back to the Lab
+          </a>
         </div>
         <h1 style={{fontSize:'clamp(1.5rem,5vw,2.1rem)',fontWeight:800,lineHeight:1.15,
           marginBottom:'.55rem',letterSpacing:'-.02em'}}>
